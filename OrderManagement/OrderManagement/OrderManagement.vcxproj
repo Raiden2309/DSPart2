@@ -141,9 +141,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OrderManager.cpp" />
+    <ClCompile Include="RobotAssignment.cpp" />
+    <ClCompile Include="testRobotAssignment.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OrderManager.hpp" />
+    <ClInclude Include="RobotAssignment.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\Downloads\orders.csv" />

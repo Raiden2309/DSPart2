@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="OrderManagement/OrderManagement.vcxproj" />
+  <Project Path="OrderManagement/OrderManagement.vcxproj" Id="ecbea29c-9329-41e4-afd6-9ab0439014c5" />
 </Solution>

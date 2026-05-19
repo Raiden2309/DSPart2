@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\OrderManagement",
+    "\\OrderManagement\\OrderManagement"
   ],
-  "SelectedNode": "\\main.cpp",
+  "SelectedNode": "\\OrderManagement\\OrderManagement\\main.cpp",
   "PreviewInSolutionExplorer": false
 }

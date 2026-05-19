@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Binary Search Tree/Binary Search Tree.vcxproj" Id="35c09896-f54e-4f33-a2da-4e21d371176a" />
+</Solution>

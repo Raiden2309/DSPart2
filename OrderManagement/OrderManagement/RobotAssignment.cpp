@@ -70,55 +70,45 @@ void RobotAssignmentModule::appendLog(int rid, const string& rname, const string
     }
 }
 
-void RobotAssignmentModule::saveRobotsToCSV() const {
-    FILE* file = fopen(ROBOTS_FILE, "w");
-    if (file == nullptr) {
-        cout << "[FILE ERROR] Could not open " << ROBOTS_FILE << " for writing.\n";
-        return;
-    }
-
-    fprintf(file, "id,name,status,currentTask,taskCount\n");
-
-    if (!isEmpty()) {
-        QueueNode* ptr = front;
-        do {
-            fprintf(file, "%d,%s,%s,%s,%d\n",
-                ptr->data.id,
-                ptr->data.name.c_str(),
-                ptr->data.status.c_str(),
-                ptr->data.currentTask.c_str(),
-                ptr->data.taskCount);
-            ptr = ptr->next;
-        } while (ptr != front);
-    }
-
-    fclose(file);
-}
-
 void RobotAssignmentModule::loadRobotsFromCSV() {
-    FILE* file = fopen(ROBOTS_FILE, "r");
-    if (file == nullptr) {
-        cout << "[FILE] " << ROBOTS_FILE << " not found. Initialising default robots.\n";
+    ifstream file("robots.csv");
+    if (!file.is_open()) {
+        cout << "[FILE] " << "robots.csv" << " not found. Initialising default robots.\n";
         initDefaultRobots();
         return;
     }
 
-    char line[256];
-    fgets(line, sizeof(line), file);
+    string header;
+    getline(file, header);
 
     int loaded = 0;
-    while (fgets(line, sizeof(line), file) != nullptr) {
-        int  id = 0, taskCount = 0;
-        char name[64], status[32], currentTask[128];
+    string idStr, name, status, currentTask, taskCountStr;
 
-        if (sscanf(line, "%d,%63[^,],%31[^,],%127[^,],%d",
-            &id, name, status, currentTask, &taskCount) != 5) continue;
+    while (file.good()) {
+        getline(file, idStr, ',');
+        if (idStr.empty()) break;
+
+        getline(file, name, ',');
+        getline(file, status, ',');
+        getline(file, currentTask, ',');
+        getline(file, taskCountStr);
+
+        if (!taskCountStr.empty() && taskCountStr.back() == '\r')
+            taskCountStr.pop_back();
+
+        int id = 0;
+        for (char c : idStr)
+            if (c >= '0' && c <= '9') id = id * 10 + (c - '0');
+
+        int taskCount = 0;
+        for (char c : taskCountStr)
+            if (c >= '0' && c <= '9') taskCount = taskCount * 10 + (c - '0');
 
         if (id <= 0) continue;
 
-        Robot r(id, string(name));
-        r.status = string(status);
-        r.currentTask = string(currentTask);
+        Robot r(id, name);
+        r.status = status;
+        r.currentTask = currentTask;
         r.taskCount = taskCount;
 
         QueueNode* newNode = new QueueNode(r);
@@ -133,18 +123,13 @@ void RobotAssignmentModule::loadRobotsFromCSV() {
         }
         count++;
         loaded++;
-
-        cout << "[LOADED] " << name << " (ID: " << id << " | Status: " << status << ")\n";
     }
 
-    fclose(file);
+    file.close();
 
     if (loaded == 0) {
-        cout << "[FILE] " << ROBOTS_FILE << " was empty. Initialising default robots.\n";
+        cout << "[FILE] " << "robots.csv" << " was empty. Initialising default robots.\n";
         initDefaultRobots();
-    }
-    else {
-        cout << "[FILE] " << loaded << " robot(s) loaded from " << ROBOTS_FILE << ".\n";
     }
 }
 
@@ -157,7 +142,6 @@ void RobotAssignmentModule::initDefaultRobots(int n) {
     for (int i = 1; i <= n; i++)
         enqueueRobot(i, "Robot-" + intToStr(i));
     cout << "[INIT] Done. " << count << " robot(s) ready.\n";
-    saveRobotsToCSV();
 }
 
 bool RobotAssignmentModule::enqueueRobot(int id, const string& name) {
@@ -187,7 +171,6 @@ bool RobotAssignmentModule::enqueueRobot(int id, const string& name) {
     count++;
 
     cout << "[ENQUEUED] " << name << " (ID: " << id << ")  |  Queue size: " << count << "\n";
-    saveRobotsToCSV();
     return true;
 }
 
@@ -210,7 +193,6 @@ bool RobotAssignmentModule::dequeueRobot() {
     cout << "[DEQUEUED] " << target->data.name << " (ID: " << target->data.id << ")\n";
     delete target;
     count--;
-    saveRobotsToCSV();
     return true;
 }
 
@@ -240,7 +222,6 @@ bool RobotAssignmentModule::assignTask(const string& taskDesc) {
                 << " (ID: " << ptr->data.id << ")\n";
 
             advanceRotation();
-            saveRobotsToCSV();
             return true;
         }
 
@@ -268,7 +249,6 @@ bool RobotAssignmentModule::completeTask(int robotID) {
     cout << "[COMPLETED] " << node->data.name << " finished: \"" << node->data.currentTask << "\"\n";
     node->data.status = "Available";
     node->data.currentTask = "None";
-    saveRobotsToCSV();
     return true;
 }
 
@@ -286,7 +266,6 @@ bool RobotAssignmentModule::setMaintenance(int robotID) {
     cout << "[MAINTENANCE] " << node->data.name << " taken offline.\n";
     node->data.status = "Maintenance";
     node->data.currentTask = "None";
-    saveRobotsToCSV();
     return true;
 }
 
@@ -304,7 +283,6 @@ bool RobotAssignmentModule::restoreRobot(int robotID) {
     cout << "[RESTORED] " << node->data.name << " is back online.\n";
     node->data.status = "Available";
     node->data.currentTask = "None";
-    saveRobotsToCSV();
     return true;
 }
 

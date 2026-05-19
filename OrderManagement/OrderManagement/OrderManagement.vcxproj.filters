@@ -37,5 +37,8 @@
     <None Include="..\..\..\..\..\..\Downloads\orders.csv">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="robots.csv">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

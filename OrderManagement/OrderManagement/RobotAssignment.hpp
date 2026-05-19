@@ -4,10 +4,8 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <cstdio>
+#include <fstream>
 using namespace std;
-
-const char ROBOTS_FILE[] = "robots.csv";
 
 struct Robot {
     int    id;
@@ -66,8 +64,6 @@ private:
     void       advanceRotation();
     void       printDivider(int width = 60, char ch = '-') const;
     string     intToStr(int n) const;
-
-    void       saveRobotsToCSV() const;
 
 public:
     RobotAssignmentModule();

@@ -48,7 +48,7 @@ void printRobotMenu() {
 int main() {
     OrderManager orderManager;
     RobotAssignmentModule robotManager;
-
+    robotManager.loadRobotsFromCSV(); 
     int mainChoice;
 
     do {

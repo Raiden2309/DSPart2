@@ -1,24 +1,20 @@
 #include "RobotAssignment.hpp"
 
 RobotAssignmentModule::RobotAssignmentModule()
-    : front(nullptr), rear(nullptr), count(0), nextRobot(0),
+    : front(nullptr), back(nullptr), count(0), nextRobot(0),
     logHead(nullptr), logTail(nullptr), logCount(0) {
 }
 
 RobotAssignmentModule::~RobotAssignmentModule() {
-    if (rear != nullptr) {
-        rear->next = nullptr;
-        QueueNode* ptr = front;
-        while (ptr != nullptr) {
-            QueueNode* tmp = ptr;
-            ptr = ptr->next;
-            delete tmp;
-        }
+    if (back != nullptr) back->next = nullptr;
+    QueueNode* ptr = front;
+    while (ptr != nullptr) {
+        QueueNode* tmp = ptr;
+        ptr = ptr->next;
+        delete tmp;
     }
     clearLog();
 }
-
-// Helpers
 
 void RobotAssignmentModule::clearLog() {
     LogNode* ptr = logHead;
@@ -27,8 +23,7 @@ void RobotAssignmentModule::clearLog() {
         ptr = ptr->next;
         delete tmp;
     }
-    logHead = nullptr;
-    logTail = nullptr;
+    logHead = logTail = nullptr;
     logCount = 0;
 }
 
@@ -40,17 +35,6 @@ QueueNode* RobotAssignmentModule::findRobotNode(int robotID) const {
         ptr = ptr->next;
     } while (ptr != front);
     return nullptr;
-}
-
-void RobotAssignmentModule::appendLog(int rid, const string& rname, const string& task) {
-    LogNode* entry = new LogNode(++logCount, rid, rname, task);
-    if (logHead == nullptr) {
-        logHead = logTail = entry;
-    }
-    else {
-        logTail->next = entry;
-        logTail = entry;
-    }
 }
 
 void RobotAssignmentModule::advanceRotation() {
@@ -65,7 +49,7 @@ void RobotAssignmentModule::printDivider(int width, char ch) const {
 
 string RobotAssignmentModule::intToStr(int n) const {
     if (n == 0) return "0";
-    string result = "";
+    string result;
     while (n > 0) {
         result = static_cast<char>('0' + n % 10) + result;
         n /= 10;
@@ -73,40 +57,137 @@ string RobotAssignmentModule::intToStr(int n) const {
     return result;
 }
 
-// Setup
+void RobotAssignmentModule::appendLog(int rid, const string& rname, const string& task) {
+    ++logCount;
+    LogNode* entry = new LogNode(logCount, rid, rname, task);
+    if (logHead == nullptr) {
+        logHead = logTail = entry;
+    }
+    else {
+        entry->prev = logTail;
+        logTail->next = entry;
+        logTail = entry;
+    }
+}
+
+void RobotAssignmentModule::saveRobotsToCSV() const {
+    FILE* file = fopen(ROBOTS_FILE, "w");
+    if (file == nullptr) {
+        cout << "[FILE ERROR] Could not open " << ROBOTS_FILE << " for writing.\n";
+        return;
+    }
+
+    fprintf(file, "id,name,status,currentTask,taskCount\n");
+
+    if (!isEmpty()) {
+        QueueNode* ptr = front;
+        do {
+            fprintf(file, "%d,%s,%s,%s,%d\n",
+                ptr->data.id,
+                ptr->data.name.c_str(),
+                ptr->data.status.c_str(),
+                ptr->data.currentTask.c_str(),
+                ptr->data.taskCount);
+            ptr = ptr->next;
+        } while (ptr != front);
+    }
+
+    fclose(file);
+}
+
+void RobotAssignmentModule::loadRobotsFromCSV() {
+    FILE* file = fopen(ROBOTS_FILE, "r");
+    if (file == nullptr) {
+        cout << "[FILE] " << ROBOTS_FILE << " not found. Initialising default robots.\n";
+        initDefaultRobots();
+        return;
+    }
+
+    char line[256];
+    fgets(line, sizeof(line), file);
+
+    int loaded = 0;
+    while (fgets(line, sizeof(line), file) != nullptr) {
+        int  id = 0, taskCount = 0;
+        char name[64], status[32], currentTask[128];
+
+        if (sscanf(line, "%d,%63[^,],%31[^,],%127[^,],%d",
+            &id, name, status, currentTask, &taskCount) != 5) continue;
+
+        if (id <= 0) continue;
+
+        Robot r(id, string(name));
+        r.status = string(status);
+        r.currentTask = string(currentTask);
+        r.taskCount = taskCount;
+
+        QueueNode* newNode = new QueueNode(r);
+        if (front == nullptr) {
+            newNode->next = newNode;
+            front = back = newNode;
+        }
+        else {
+            newNode->next = front;
+            back->next = newNode;
+            back = newNode;
+        }
+        count++;
+        loaded++;
+
+        cout << "[LOADED] " << name << " (ID: " << id << " | Status: " << status << ")\n";
+    }
+
+    fclose(file);
+
+    if (loaded == 0) {
+        cout << "[FILE] " << ROBOTS_FILE << " was empty. Initialising default robots.\n";
+        initDefaultRobots();
+    }
+    else {
+        cout << "[FILE] " << loaded << " robot(s) loaded from " << ROBOTS_FILE << ".\n";
+    }
+}
 
 void RobotAssignmentModule::initDefaultRobots(int n) {
     if (n <= 0) {
         cout << "[WARNING] Count must be positive.\n";
         return;
     }
-    cout << "\n[INIT] Registering " << n << " robot(s)...\n";
+    cout << "\n[INIT] Registering " << n << " default robot(s)...\n";
     for (int i = 1; i <= n; i++)
         enqueueRobot(i, "Robot-" + intToStr(i));
     cout << "[INIT] Done. " << count << " robot(s) ready.\n";
+    saveRobotsToCSV();
 }
 
 bool RobotAssignmentModule::enqueueRobot(int id, const string& name) {
+    if (id <= 0) {
+        cout << "[ERROR] Invalid Robot ID: " << id << ". ID must be a positive integer.\n";
+        return false;
+    }
+    if (name.empty()) {
+        cout << "[ERROR] Robot name cannot be empty.\n";
+        return false;
+    }
     if (findRobotNode(id) != nullptr) {
         cout << "[WARNING] Robot ID " << id << " already exists. Skipping.\n";
         return false;
     }
 
     QueueNode* newNode = new QueueNode(Robot(id, name));
-
     if (front == nullptr) {
         newNode->next = newNode;
-        front = newNode;
-        rear = newNode;
+        front = back = newNode;
     }
     else {
         newNode->next = front;
-        rear->next = newNode;
-        rear = newNode;
+        back->next = newNode;
+        back = newNode;
     }
-
     count++;
+
     cout << "[ENQUEUED] " << name << " (ID: " << id << ")  |  Queue size: " << count << "\n";
+    saveRobotsToCSV();
     return true;
 }
 
@@ -117,26 +198,21 @@ bool RobotAssignmentModule::dequeueRobot() {
     }
 
     QueueNode* target = front;
-
     if (count == 1) {
-        front = nullptr;
-        rear = nullptr;
+        front = back = nullptr;
     }
     else {
         front = front->next;
-        rear->next = front;
-
-        // If nextRobot pointed at or past front, nudge it back
-        if (nextRobot >= count - 1) nextRobot = 0;
+        back->next = front;
+        if (nextRobot != 0) nextRobot--;
     }
 
     cout << "[DEQUEUED] " << target->data.name << " (ID: " << target->data.id << ")\n";
     delete target;
     count--;
+    saveRobotsToCSV();
     return true;
 }
-
-// Core Operations
 
 bool RobotAssignmentModule::assignTask(const string& taskDesc) {
     if (isEmpty()) {
@@ -148,10 +224,8 @@ bool RobotAssignmentModule::assignTask(const string& taskDesc) {
         return false;
     }
 
-    // Walk the queue starting from nextRobot
     QueueNode* ptr = front;
     for (int i = 0; i < nextRobot; i++) ptr = ptr->next;
-
     QueueNode* start = ptr;
 
     do {
@@ -166,6 +240,7 @@ bool RobotAssignmentModule::assignTask(const string& taskDesc) {
                 << " (ID: " << ptr->data.id << ")\n";
 
             advanceRotation();
+            saveRobotsToCSV();
             return true;
         }
 
@@ -189,9 +264,11 @@ bool RobotAssignmentModule::completeTask(int robotID) {
         cout << "[WARNING] " << node->data.name << " is not Busy (Status: " << node->data.status << ").\n";
         return false;
     }
+
     cout << "[COMPLETED] " << node->data.name << " finished: \"" << node->data.currentTask << "\"\n";
     node->data.status = "Available";
     node->data.currentTask = "None";
+    saveRobotsToCSV();
     return true;
 }
 
@@ -205,9 +282,11 @@ bool RobotAssignmentModule::setMaintenance(int robotID) {
         cout << "[WARNING] " << node->data.name << " is already under Maintenance.\n";
         return false;
     }
+
     cout << "[MAINTENANCE] " << node->data.name << " taken offline.\n";
     node->data.status = "Maintenance";
     node->data.currentTask = "None";
+    saveRobotsToCSV();
     return true;
 }
 
@@ -221,13 +300,13 @@ bool RobotAssignmentModule::restoreRobot(int robotID) {
         cout << "[WARNING] " << node->data.name << " is already Available.\n";
         return false;
     }
+
     cout << "[RESTORED] " << node->data.name << " is back online.\n";
     node->data.status = "Available";
     node->data.currentTask = "None";
+    saveRobotsToCSV();
     return true;
 }
-
-// Display
 
 void RobotAssignmentModule::displayAllRobots() const {
     cout << "\n";
@@ -299,6 +378,38 @@ void RobotAssignmentModule::displayAssignmentLog() const {
     cout << "\n";
 }
 
+void RobotAssignmentModule::displayLogReverse() const {
+    cout << "\n";
+    printDivider(68, '=');
+    cout << "  ASSIGNMENT LOG - REVERSE  (" << logCount << " record(s))\n";
+    printDivider(68, '=');
+
+    if (logTail == nullptr) {
+        cout << "  (no assignments recorded yet)\n";
+        printDivider(68, '=');
+        return;
+    }
+
+    cout << left
+        << setw(6) << "Log#"
+        << setw(8) << "RobotID"
+        << setw(14) << "Robot Name"
+        << "Task\n";
+    printDivider(68, '-');
+
+    LogNode* ptr = logTail;
+    while (ptr != nullptr) {
+        cout << left
+            << setw(6) << ptr->logID
+            << setw(8) << ptr->robotID
+            << setw(14) << ptr->robotName
+            << ptr->taskDesc << "\n";
+        ptr = ptr->prev;
+    }
+    printDivider(68, '=');
+    cout << "\n";
+}
+
 void RobotAssignmentModule::displayStatusSummary() const {
     cout << "\n";
     printDivider(36, '=');
@@ -314,9 +425,9 @@ void RobotAssignmentModule::displayStatusSummary() const {
     int available = 0, busy = 0, maintenance = 0;
     QueueNode* ptr = front;
     do {
-        if (ptr->data.status == "Available")   available++;
-        else if (ptr->data.status == "Busy")        busy++;
-        else                                        maintenance++;
+        if (ptr->data.status == "Available") available++;
+        else if (ptr->data.status == "Busy")      busy++;
+        else                                      maintenance++;
         ptr = ptr->next;
     } while (ptr != front);
 

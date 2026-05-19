@@ -4,7 +4,10 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cstdio>
 using namespace std;
+
+const char ROBOTS_FILE[] = "robots.csv";
 
 struct Robot {
     int    id;
@@ -13,7 +16,8 @@ struct Robot {
     string currentTask;
     int    taskCount;
 
-    Robot() : id(0), name(""), status("Available"),
+    Robot()
+        : id(0), name(""), status("Available"),
         currentTask("None"), taskCount(0) {
     }
 
@@ -36,10 +40,11 @@ struct LogNode {
     string   robotName;
     string   taskDesc;
     LogNode* next;
+    LogNode* prev;
 
     LogNode(int lid, int rid, const string& rname, const string& task)
         : logID(lid), robotID(rid), robotName(rname),
-        taskDesc(task), next(nullptr) {
+        taskDesc(task), next(nullptr), prev(nullptr) {
     }
 };
 
@@ -47,7 +52,7 @@ class RobotAssignmentModule {
 
 private:
     QueueNode* front;
-    QueueNode* rear;
+    QueueNode* back;
     int        count;
     int        nextRobot;
 
@@ -62,12 +67,15 @@ private:
     void       printDivider(int width = 60, char ch = '-') const;
     string     intToStr(int n) const;
 
+    void       saveRobotsToCSV() const;
+
 public:
     RobotAssignmentModule();
     ~RobotAssignmentModule();
 
     bool enqueueRobot(int id, const string& name);
     bool dequeueRobot();
+    void loadRobotsFromCSV();
     void initDefaultRobots(int n = 5);
 
     bool assignTask(const string& taskDesc);
@@ -77,6 +85,7 @@ public:
 
     void displayAllRobots()     const;
     void displayAssignmentLog() const;
+    void displayLogReverse()    const;
     void displayStatusSummary() const;
 
     bool isEmpty()        const { return count == 0; }

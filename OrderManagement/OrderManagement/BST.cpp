@@ -1,5 +1,8 @@
 #include "BST.h"
 #include <iostream>
+#include <string>
+
+using namespace std;
 
 BST::BST()
 {

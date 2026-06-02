@@ -4,6 +4,7 @@
 #include "OrderManager.hpp"
 #include "RobotAssignment.hpp"
 #include "BST.h" // Linked inventory header
+#include "RobotNavigation.hpp"
 
 using namespace std;
 
@@ -14,6 +15,7 @@ void printMainMenu() {
     cout << "  1. Enter Order Management Module\n";
     cout << "  2. Enter Robot Assignment Module\n";
     cout << "  3. Enter Warehouse Inventory Module (BST)\n";
+    cout << "  4. Enter Robot Navigation Module\n";
     cout << "  0. Exit System\n";
     cout << "--------------------------------------------------\n";
     cout << "  Enter choice: ";
@@ -58,6 +60,18 @@ void printInventoryMenu() {
     cout << "--------------------------------------------------\n";
     cout << "  Enter choice: ";
 }
+void printNavigationMenu()
+{
+    cout << "\n--- ROBOT NAVIGATION SUB-MENU ---\n";
+    cout << "1. Record Forward Move\n";
+    cout << "2. Record Left Move\n";
+    cout << "3. Record Right Move\n";
+    cout << "4. Display Navigation Log\n";
+    cout << "5. Return To Start\n";
+    cout << "6. Simulate Obstacle\n";
+    cout << "0. Return to Main Menu\n";
+    cout << "Enter choice: ";
+}
 
 int main() {
     OrderManager orderManager;
@@ -65,6 +79,7 @@ int main() {
     BST inventoryManager; // Linked BST object instance
 
     robotManager.loadRobotsFromCSV();
+    RobotNavigationModule navigationManager;
     int mainChoice;
 
     do {
@@ -290,12 +305,59 @@ int main() {
             break;
         }
 
+        case 4:
+{
+    int navChoice;
+
+    do
+    {
+        printNavigationMenu();
+
+        cin >> navChoice;
+        cin.ignore();
+
+        switch(navChoice)
+        {
+            case 1:
+                navigationManager.recordMove("Forward");
+                break;
+
+            case 2:
+                navigationManager.recordMove("Left");
+                break;
+
+            case 3:
+                navigationManager.recordMove("Right");
+                break;
+
+            case 4:
+                navigationManager.displayNavigationLog();
+                break;
+
+            case 5:
+                navigationManager.returnToStart();
+                break;
+
+            case 6:
+                navigationManager.obstacleDetected();
+                break;
+
+            case 0:
+                cout << "Returning...\n";
+                break;
+        }
+
+    } while(navChoice != 0);
+
+    break;
+}
+
         case 0:
             cout << "\n[SYSTEM SHUTDOWN] Terminating Warehouse Master Control...\n\n";
             break;
 
         default:
-            cout << "[ERROR] Invalid choice. Please select 0, 1, 2, or 3.\n";
+            cout << "[ERROR] Invalid choice. Please select 0, 1, 2, 3, or 4.\n";
             break;
         }
 

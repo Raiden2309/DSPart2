@@ -1,9 +1,8 @@
-//Name: Edwin Chin Chun Wui
-//TP No.: TP107065
-
+//Name: Edwin Chin Chun Wui//TP No.: TP107065
 #include "OrderManager.hpp"
+#include <fstream> // Required for ifstream file streaming
 
-using namespace std; 
+using namespace std;
 
 // Constructor initializes all tracking pointers to null
 OrderManager::OrderManager() {
@@ -36,17 +35,46 @@ bool OrderManager::isEmpty() const {
     return front == nullptr;
 }
 
+// Silent helper for background parsing to guarantee terminal window privacy
+void OrderManager::loadOrdersFromCSV() {
+    ifstream file("orders.csv");
+    if (!file.is_open()) {
+        cerr << "[ERROR] Could not open orders.csv during startup. Check the file path!\n";
+        return;
+    }
+
+    string idStr, name;
+    while (getline(file, idStr, ',') && getline(file, name)) {
+        try {
+            int id = stoi(idStr);
+
+            // Replicated enqueue logic inline to keep it completely private/silent on screen
+            OrderNode* newNode = new OrderNode(id, name);
+            if (isEmpty()) {
+                front = newNode;
+                rear = newNode;
+            }
+            else {
+                rear->next = newNode;
+                rear = newNode;
+            }
+        }
+        catch (const invalid_argument& e) {
+            // Skips corrupt rows silently to preserve menu appearance
+        }
+    }
+    file.close();
+}
+
 // Requirement: Accept and record new customer orders into the system
 void OrderManager::enqueueOrder(int id, const string& name) {
     OrderNode* newNode = new OrderNode(id, name);
 
-    // If the queue is empty, both front and rear point to the new node
     if (isEmpty()) {
         front = newNode;
         rear = newNode;
     }
     else {
-        // Link the old rear to the new node, then shift rear forward
         rear->next = newNode;
         rear = newNode;
     }
@@ -55,25 +83,20 @@ void OrderManager::enqueueOrder(int id, const string& name) {
 
 // Requirement: Process orders sequentially according to arrival & remove them
 OrderNode* OrderManager::dequeueOrder() {
-    // Exceptional Case: Handle empty order list
     if (isEmpty()) {
         cout << "System Alert: No pending orders to assign!\n";
         return nullptr;
     }
 
-    // Keep track of the node being processed
     OrderNode* orderedNode = front;
 
-    // Advance the front pointer to the next order in line
     front = front->next;
     if (front == nullptr) {
-        rear = nullptr; // If queue becomes empty, reset rear too
+        rear = nullptr;
     }
 
-    // Detach the unlinked node from the main sequence
     orderedNode->next = nullptr;
 
-    // Move the processed node into the Completed History list
     if (historyFront == nullptr) {
         historyFront = orderedNode;
         historyRear = orderedNode;

@@ -76,7 +76,6 @@ void printNavigationMenu()
 int main() {
     OrderManager orderManager;
     RobotAssignmentModule robotManager; 
-    RobotAssignmentModule robotManager;
     BST inventoryManager; // Linked BST object instance
     robotManager.loadRobotsFromCSV();
     RobotNavigationModule navigationManager;

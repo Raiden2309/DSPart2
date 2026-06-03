@@ -19,7 +19,7 @@ RobotAssignmentModule::~RobotAssignmentModule() {
 }
 
 void RobotAssignmentModule::clearLog() {
-    // Traverse the doubly-linked log and delete every node
+    // Traverse the singly-linked log and delete every node
     LogNode* ptr = logHead;
     while (ptr != nullptr) {
         LogNode* tmp = ptr;
@@ -62,12 +62,10 @@ void RobotAssignmentModule::appendLog(int rid, const string& rname, const string
     ++logCount;
     LogNode* entry = new LogNode(logCount, rid, rname, task);
     if (logHead == nullptr) {
-        // First entry, head and tail both point to it
         logHead = logTail = entry;
     }
     else {
-        // Append to the tail of the doubly-linked log list
-        entry->prev = logTail;
+        // Append to the tail of the singly-linked log list
         logTail->next = entry;
         logTail = entry;
     }

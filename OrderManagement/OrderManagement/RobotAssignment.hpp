@@ -38,11 +38,10 @@ struct LogNode {
     string   robotName;
     string   taskDesc;
     LogNode* next;
-    LogNode* prev;
 
     LogNode(int lid, int rid, const string& rname, const string& task)
         : logID(lid), robotID(rid), robotName(rname),
-        taskDesc(task), next(nullptr), prev(nullptr) {
+        taskDesc(task), next(nullptr) {
     }
 };
 

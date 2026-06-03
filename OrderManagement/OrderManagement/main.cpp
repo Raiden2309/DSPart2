@@ -176,7 +176,6 @@ int main() {
         }
 
         case 2: {
-            robotManager.loadRobotsFromCSV();
             int robotChoice;
             do {
                 printRobotMenu();

@@ -71,7 +71,6 @@ public:
     bool enqueueRobot(int id, const string& name);
     bool dequeueRobot();
     void loadRobotsFromCSV();
-    void saveRobotsToCSV() const;
     void initDefaultRobots(int n = 5);
 
     bool assignTask(const string& taskDesc);

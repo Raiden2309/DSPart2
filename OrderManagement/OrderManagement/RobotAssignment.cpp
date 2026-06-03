@@ -5,38 +5,8 @@ RobotAssignmentModule::RobotAssignmentModule()
     logHead(nullptr), logTail(nullptr), logCount(0) {
 }
 
-void RobotAssignmentModule::saveRobotsToCSV() const {
-    // Overwrite robots.csv with the current state of all robots
-    ofstream file("robots.csv");
-    if (!file.is_open()) {
-        cout << "[ERROR] Could not open robots.csv for saving.\n";
-        return;
-    }
-
-    // Write header row matching the load format
-    file << "id,name,status,currentTask,taskCount\n";
-
-    // Walk the circular queue and write one CSV row per robot
-    if (!isEmpty()) {
-        QueueNode* ptr = front;
-        do {
-            file << ptr->data.id << ","
-                << ptr->data.name << ","
-                << ptr->data.status << ","
-                << ptr->data.currentTask << ","
-                << ptr->data.taskCount << "\n";
-            ptr = ptr->next;
-        } while (ptr != front);
-    }
-
-    file.close();
-    cout << "[SAVED] Robot data written to robots.csv (" << count << " robot(s)).\n";
-}
 
 RobotAssignmentModule::~RobotAssignmentModule() {
-    // Save robot state to CSV before releasing memory
-    saveRobotsToCSV();
-
     // Break the circular link so we can walk it like a normal list
     if (back != nullptr) back->next = nullptr;
     QueueNode* ptr = front;

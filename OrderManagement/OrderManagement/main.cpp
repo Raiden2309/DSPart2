@@ -47,8 +47,7 @@ void printRobotMenu() {
 
 int main() {
     OrderManager orderManager;
-    RobotAssignmentModule robotManager;
-    robotManager.loadRobotsFromCSV(); 
+    RobotAssignmentModule robotManager; 
     int mainChoice;
 
     do {
@@ -122,6 +121,7 @@ int main() {
         }
 
         case 2: {
+            robotManager.loadRobotsFromCSV();
             int robotChoice;
             do {
                 printRobotMenu();

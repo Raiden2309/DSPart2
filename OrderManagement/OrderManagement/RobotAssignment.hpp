@@ -52,7 +52,7 @@ private:
     QueueNode* front;
     QueueNode* back;
     int        count;
-    int        nextRobot;
+    QueueNode* nextRobot;
 
     LogNode* logHead;
     LogNode* logTail;
@@ -61,7 +61,6 @@ private:
     void       appendLog(int robotID, const string& robotName, const string& task);
     void       clearLog();
     QueueNode* findRobotNode(int robotID) const;
-    void       advanceRotation();
     void       printDivider(int width = 60, char ch = '-') const;
     string     intToStr(int n) const;
 
@@ -72,6 +71,7 @@ public:
     bool enqueueRobot(int id, const string& name);
     bool dequeueRobot();
     void loadRobotsFromCSV();
+    void saveRobotsToCSV() const;
     void initDefaultRobots(int n = 5);
 
     bool assignTask(const string& taskDesc);
@@ -81,7 +81,6 @@ public:
 
     void displayAllRobots()     const;
     void displayAssignmentLog() const;
-    void displayLogReverse()    const;
     void displayStatusSummary() const;
 
     bool isEmpty()        const { return count == 0; }

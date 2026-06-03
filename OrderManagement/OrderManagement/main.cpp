@@ -23,7 +23,7 @@ void printMainMenu() {
 
 void printOrderMenu() {
     cout << "\n  --- ORDER MANAGEMENT SUB-MENU ---\n";
-    cout << "  1. [Automated] Load Orders from CSV\n";
+    cout << "  1. Load Orders from CSV\n"; // Reverted status string text label
     cout << "  2. Display Pending Orders\n";
     cout << "  3. Process Next Order (Fulfill, Dispatch & Route)\n";
     cout << "  4. Display Completed Order History\n";
@@ -71,7 +71,7 @@ void printNavigationMenu() {
     cout << "  0. Return to Master Control\n";
     cout << "--------------------------------------------------\n";
     cout << "  Enter choice: ";
-}   
+}
 
 int main() {
     OrderManager orderManager;
@@ -79,11 +79,10 @@ int main() {
     BST inventoryManager;
     RobotNavigationModule navigationManager;
 
-    // ----------------------------------------------------------------
-    // SILENT BACKGROUND DATA INITIALIZATION LAYER
-    // ----------------------------------------------------------------
+    // Tracking flag to prevent re-reading the CSV file multiple times
+    bool isOrdersLoaded = false;
+
     robotManager.loadRobotsFromCSV();
-    orderManager.loadOrdersFromCSV();
     inventoryManager.loadInventoryFromCSV();
 
     int mainChoice;
@@ -114,7 +113,14 @@ int main() {
 
                 switch (orderChoice) {
                 case 1:
-                    cout << "[INFO] Orders have already been loaded automatically on system startup.\n";
+                    if (!isOrdersLoaded) {
+                        cout << "[SYSTEM] Loading order requests from orders.csv...\n";
+                        orderManager.loadOrdersFromCSV();
+                        isOrdersLoaded = true;
+                    }
+                    else {
+                        cout << "[INFO] orders.csv tracking profile records are already loaded in memory.\n";
+                    }
                     break;
                 case 2:
                     orderManager.displayPendingOrders();
@@ -126,7 +132,6 @@ int main() {
                     if (processedOrder) {
                         cout << "[SYSTEM] Order for '" << processedOrder->itemName << "' dequeued.\n";
 
-                        // Use our new function to find the name within the ID-sorted tree structure
                         cout << "[LINK] Querying BST Inventory via Item Name description...\n";
                         ItemNode* itemDetails = inventoryManager.searchByName(processedOrder->itemName);
 
@@ -135,10 +140,9 @@ int main() {
 
                         if (itemDetails != nullptr) {
                             locationStr = itemDetails->location;
-                            internalIdStr = itemDetails->itemID; // Retrieve the formal corporate ID from the node
+                            internalIdStr = itemDetails->itemID;
                         }
 
-                        // The assignment log can now show both the item ID and location info
                         string automatedTask = "Fetch Order #" + to_string(processedOrder->orderId) +
                             " [" + processedOrder->itemName + " (ID: " + internalIdStr + ")] from " + locationStr;
 
@@ -168,7 +172,7 @@ int main() {
                     cout << "[ERROR] Invalid choice.\n";
                     break;
                 }
-            } while (orderChoice != 0);
+            } while(orderChoice != 0); // Keep scope loop running
             break;
         }
 
@@ -212,7 +216,6 @@ int main() {
                     if (!(cin >> id)) { cin.clear(); cin.ignore(1000, '\n'); cout << "[ERROR] Invalid ID.\n"; break; }
                     cin.ignore(1000, '\n');
                     if (robotManager.completeTask(id)) {
-                        // SYSTEM-WIDE RESPONSE: When task finishes, automatically execute backtracking return
                         cout << "[LINK] Routing active tracking telemetry back to base station...\n";
                         navigationManager.returnToStart();
                     }

@@ -1,6 +1,10 @@
+//Name: Eu Xiao Xuan
+//TP No: TP077171
+
 #include "BST.h"
 #include <iostream>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -238,4 +242,64 @@ ItemNode *BST::deleteNode(ItemNode *current, string id)
         }
     }
     return current;
+}
+void BST::loadInventoryFromCSV() {
+    ifstream file("inventory.csv");
+    if (!file.is_open()) {
+        cerr << "[ERROR] Could not open inventory.csv. Inventory index is empty!\n";
+        return;
+    }
+
+    string line;
+    getline(file, line); // Skip headers
+
+    while (getline(file, line)) {
+        if (line.empty()) continue;
+
+        if (line.back() == '\r') {
+            line.pop_back();
+        }
+
+        size_t firstComma = line.find(',');
+        if (firstComma == string::npos) continue;
+
+        size_t secondComma = line.find(',', firstComma + 1);
+        if (secondComma == string::npos) continue;
+
+        string id = line.substr(0, firstComma);
+        string name = line.substr(firstComma + 1, secondComma - firstComma - 1);
+        string location = line.substr(secondComma + 1);
+
+        if (!id.empty() && !name.empty() && !location.empty()) {
+            // FIX: Passing 'id' as the first parameter sets it as the primary sorting key
+            insert(id, name, location);
+        }
+    }
+    file.close();
+}
+
+// 2. NEW FUNCTION: Public wrapper to initiate an item name search
+ItemNode* BST::searchByName(string targetName) {
+    return searchByNameHelper(root, targetName);
+}
+
+// 3. NEW FUNCTION: Recursive function that traverses tree nodes to find an item name match
+ItemNode* BST::searchByNameHelper(ItemNode* current, string targetName) {
+    if (current == nullptr) {
+        return nullptr;
+    }
+
+    // Check if the current node matches the requested item name
+    if (current->itemName == targetName) {
+        return current;
+    }
+
+    // Search the left subtree
+    ItemNode* leftResult = searchByNameHelper(current->left, targetName);
+    if (leftResult != nullptr) {
+        return leftResult;
+    }
+
+    // Search the right subtree
+    return searchByNameHelper(current->right, targetName);
 }

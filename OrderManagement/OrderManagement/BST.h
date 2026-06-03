@@ -1,24 +1,33 @@
+//Name: Eu Xiao Xuan
+//TP No: TP077171
+
 #ifndef BST_H
 #define BST_H
 
 #include "ItemNode.h"
 
-// BST class to manage warehouse items
-// Items are organized by itemID as the BST key
 class BST
 {
 private:
-    ItemNode *root;                                     // pointer to the root node of the tree
-    void inorder(ItemNode *current);                    // helper function, public environment doesnt need this
-    ItemNode *deleteNode(ItemNode *current, string id); // helper for delete (helper function)
+    ItemNode* root;
+    void inorder(ItemNode* current);
+    ItemNode* deleteNode(ItemNode* current, string id);
+
+    // Private helper for matching string descriptions sequentially
+    ItemNode* searchByNameHelper(ItemNode* current, string targetName);
 
 public:
-    BST(); // Constructor - initializes empty tree
+    BST();
     void insert(string id, string name, string location);
     void display();
-    ItemNode *search(string id); // allows other modules in the system to get item's location immediately
+    ItemNode* search(string id); // This searches by ID key (e.g., "INV01")
+
+    // Public function to search by Name string (e.g., "Desk Lamp")
+    ItemNode* searchByName(string targetName);
+
     void update(string id);
     void deleteItem(string id);
+    void loadInventoryFromCSV();
 };
 
 #endif

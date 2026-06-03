@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\Downloads\orders.csv" />
+    <None Include="inventory.csv" />
     <None Include="robots.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

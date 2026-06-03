@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿  BST.cpp
   main.cpp
 C:\Users\User\Desktop\DS Assignment\Part 2\DSPart2\OrderManagement\OrderManagement\main.cpp(123,56): warning C4101: 'e': unreferenced local variable
@@ -11,3 +12,10 @@ main.obj : error LNK2019: unresolved external symbol "public: void __cdecl Robot
 main.obj : error LNK2019: unresolved external symbol "public: void __cdecl RobotNavigationModule::returnToStart(void)" (?returnToStart@RobotNavigationModule@@QEAAXXZ) referenced in function main
 main.obj : error LNK2019: unresolved external symbol "public: void __cdecl RobotNavigationModule::obstacleDetected(void)" (?obstacleDetected@RobotNavigationModule@@QEAAXXZ) referenced in function main
 C:\Users\User\Desktop\DS Assignment\Part 2\DSPart2\OrderManagement\x64\Debug\OrderManagement.exe : fatal error LNK1120: 6 unresolved externals
+=======
+﻿  OrderManager.cpp
+C:\Users\User\source\repos\Data Structure APU\DSPart2\OrderManagement\OrderManagement\OrderManager.cpp(62,40): warning C4101: 'e': unreferenced local variable
+  main.cpp
+  Generating Code...
+  OrderManagement.vcxproj -> C:\Users\User\source\repos\Data Structure APU\DSPart2\OrderManagement\x64\Debug\OrderManagement.exe
+>>>>>>> 7e4be896352a69d9f93486e8eedd72f13829e182

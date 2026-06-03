@@ -1,50 +1,38 @@
-//Name: Edwin Chin Chun Wui
-//TP No.: TP107065
-
 #ifndef ORDER_MANAGER_HPP
 #define ORDER_MANAGER_HPP
 
 #include <iostream>
 #include <string>
 
-// Structure representing an individual customer order node
 struct OrderNode {
     int orderId;
     std::string itemName;
     OrderNode* next;
 
-    // Constructor for easy node creation
-    OrderNode(int id, const std::string& name) {
-        orderId = id;
-        itemName = name;
-        next = nullptr;
-    }
+    OrderNode(int id, const std::string& name) : orderId(id), itemName(name), next(nullptr) {}
 };
 
-// Custom Queue Implementation using a Singly Linked List
 class OrderManager {
 private:
-    OrderNode* front; // Points to the oldest order (for processing/removal)
-    OrderNode* rear;  // Points to the newest order (for adding)
-
-    // Auxiliary lists to track total system history
+    OrderNode* front;
+    OrderNode* rear;
     OrderNode* historyFront;
     OrderNode* historyRear;
+    void clearQueue(OrderNode*& headPtr, OrderNode*& tailPtr);
 
 public:
     OrderManager();
     ~OrderManager();
 
-    // Core Functional Requirements
-    void enqueueOrder(int id, const std::string& name); // Accept and record order
-    OrderNode* dequeueOrder();                          // Assign to robot / remove
-    void displayPendingOrders() const;                  // Display active queue
-    void displayCompletedHistory() const;               // Display history
-    void displayCurrentOrder() const;                   // Display current item processing
-
-    // Helper Methods
     bool isEmpty() const;
-    void clearQueue(OrderNode*& headPtr, OrderNode*& tailPtr);
+    void enqueueOrder(int id, const std::string& name);
+    OrderNode* dequeueOrder();
+    void displayCurrentOrder() const;
+    void displayPendingOrders() const;
+    void displayCompletedHistory() const;
+
+    // Added for automatic background loading
+    void loadOrdersFromCSV();
 };
 
-#endif // ORDER_MANAGER_HPP
+#endif

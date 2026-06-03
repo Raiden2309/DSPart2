@@ -3,8 +3,8 @@
 #include <string>
 #include "OrderManager.hpp"
 #include "RobotAssignment.hpp"
-#include "BST.h" // Linked inventory header
-#include "RobotNavigation.hpp"
+#include "BST.h" 
+#include "RobotNavigation.hpp" // Included the new robot navigation module
 
 using namespace std;
 
@@ -15,7 +15,7 @@ void printMainMenu() {
     cout << "  1. Enter Order Management Module\n";
     cout << "  2. Enter Robot Assignment Module\n";
     cout << "  3. Enter Warehouse Inventory Module (BST)\n";
-    cout << "  4. Enter Robot Navigation Module\n";
+    cout << "  4. Enter Robot Navigation Tracking Module (Stack)\n"; // Added option
     cout << "  0. Exit System\n";
     cout << "--------------------------------------------------\n";
     cout << "  Enter choice: ";
@@ -23,9 +23,9 @@ void printMainMenu() {
 
 void printOrderMenu() {
     cout << "\n  --- ORDER MANAGEMENT SUB-MENU ---\n";
-    cout << "  1. Load Orders from CSV\n";
+    cout << "  1. [Automated] Load Orders from CSV (Already Run)\n";
     cout << "  2. Display Pending Orders\n";
-    cout << "  3. Process Next Order (Dequeue & Assign Robot)\n"; // Clarified option text
+    cout << "  3. Process Next Order (Dequeue & Assign Robot)\n";
     cout << "  4. Display Completed Order History\n";
     cout << "  0. Return to Master Control\n";
     cout << "--------------------------------------------------\n";
@@ -60,25 +60,35 @@ void printInventoryMenu() {
     cout << "--------------------------------------------------\n";
     cout << "  Enter choice: ";
 }
-void printNavigationMenu()
-{
-    cout << "\n--- ROBOT NAVIGATION SUB-MENU ---\n";
-    cout << "1. Record Forward Move\n";
-    cout << "2. Record Left Move\n";
-    cout << "3. Record Right Move\n";
-    cout << "4. Display Navigation Log\n";
-    cout << "5. Return To Start\n";
-    cout << "6. Simulate Obstacle\n";
-    cout << "0. Return to Main Menu\n";
-    cout << "Enter choice: ";
+
+// Added menu structure for the stack-based robot movement module
+void printNavigationMenu() {
+    cout << "\n  --- ROBOT NAVIGATION SUB-MENU (STACK) ---\n";
+    cout << "  1. Record a New Movement Direction\n";
+    cout << "  2. Undo/Pop Last Movement\n";
+    cout << "  3. Display Active Path Navigation Log\n";
+    cout << "  4. Trigger Obstacle Avoidance Routing\n";
+    cout << "  5. Safely Return Robot to Starting Point\n";
+    cout << "  0. Return to Master Control\n";
+    cout << "--------------------------------------------------\n";
+    cout << "  Enter choice: ";
 }
 
 int main() {
     OrderManager orderManager;
     RobotAssignmentModule robotManager; 
     BST inventoryManager; // Linked BST object instance
+    RobotAssignmentModule robotManager;
+    BST inventoryManager;
+    RobotNavigationModule navigationManager; // Instantiated the navigation tracker object
+
+    // ----------------------------------------------------------------
+    // SILENT BACKGROUND DATA INITIALIZATION LAYER
+    // ----------------------------------------------------------------
     robotManager.loadRobotsFromCSV();
-    RobotNavigationModule navigationManager;
+    orderManager.loadOrdersFromCSV();
+    // ----------------------------------------------------------------
+
     int mainChoice;
 
     do {
@@ -109,24 +119,9 @@ int main() {
                 OrderNode* processedOrder = nullptr;
 
                 switch (orderChoice) {
-                case 1: {
-                    ifstream file("orders.csv");
-                    if (!file.is_open()) {
-                        cerr << "[ERROR] Could not open orders.csv. Check the file path!\n";
-                        break;
-                    }
-                    while (getline(file, idStr, ',') && getline(file, itemName)) {
-                        try {
-                            int orderId = stoi(idStr);
-                            orderManager.enqueueOrder(orderId, itemName);
-                        }
-                        catch (const invalid_argument& e) {
-                            cerr << "[ERROR] Could not convert Order ID: " << idStr << "\n";
-                        }
-                    }
-                    file.close();
+                case 1:
+                    cout << "[INFO] Orders have already been loaded automatically on system startup.\n";
                     break;
-                }
                 case 2:
                     orderManager.displayPendingOrders();
                     break;
@@ -137,27 +132,23 @@ int main() {
                     if (processedOrder) {
                         cout << "[SYSTEM] Order for '" << processedOrder->itemName << "' has been processed.\n";
 
-                        // LINKED LOGIC FLOW: Use Order Data to search the Inventory Tree
                         cout << "[LINK] Locating item in warehouse inventory...\n";
-                        ItemNode* itemDetails = inventoryManager.search(processedOrder->itemName); //
+                        ItemNode* itemDetails = inventoryManager.search(processedOrder->itemName);
 
                         string automatedTask;
                         if (itemDetails != nullptr) {
-                            // If the item exists in the BST, give the robot its location info
                             automatedTask = "Fetch Order #" + to_string(processedOrder->orderId) +
                                 ": " + itemDetails->itemName +
                                 " from Location: " + itemDetails->location;
                         }
                         else {
-                            // If item not found in BST inventory tracker, assign task using raw order info
                             automatedTask = "Fetch Order #" + to_string(processedOrder->orderId) +
                                 ": " + processedOrder->itemName +
                                 " (Location Unknown)";
                         }
 
-                        // LINKED LOGIC FLOW: Hand the item string task directly over to a robot
                         cout << "[LINK] Dispatching task to autonomous robot systems...\n";
-                        robotManager.assignTask(automatedTask); //
+                        robotManager.assignTask(automatedTask);
                     }
                     break;
                 case 4:
@@ -272,26 +263,26 @@ int main() {
                     getline(cin, itemName);
                     cout << "  Enter Warehouse Location: ";
                     getline(cin, location);
-                    inventoryManager.insert(itemId, itemName, location); //
+                    inventoryManager.insert(itemId, itemName, location);
                     break;
                 case 2:
                     cout << "  Enter Item ID to search: ";
                     getline(cin, itemId);
-                    inventoryManager.search(itemId); //
+                    inventoryManager.search(itemId);
                     break;
                 case 3:
                     cout << "  Enter Item ID to update: ";
                     getline(cin, itemId);
-                    inventoryManager.update(itemId); //
+                    inventoryManager.update(itemId);
                     break;
                 case 4:
                     cout << "  Enter Item ID to delete: ";
                     getline(cin, itemId);
-                    inventoryManager.deleteItem(itemId); //
+                    inventoryManager.deleteItem(itemId);
                     break;
                 case 5:
                     cout << "\n--- Current Warehouse Inventory ---\n";
-                    inventoryManager.display(); //
+                    inventoryManager.display();
                     break;
                 case 0:
                     cout << "[SYSTEM] Returning to Main Menu...\n";
@@ -304,52 +295,54 @@ int main() {
             break;
         }
 
-        case 4:
-{
-    int navChoice;
+        case 4: { // Logic processing layer for the new Robot Navigation Tracking Module
+            int navChoice;
+            do {
+                printNavigationMenu();
+                if (!(cin >> navChoice)) {
+                    cin.clear();
+                    cin.ignore(1000, '\n');
+                    cout << "[ERROR] Invalid input.\n";
+                    continue;
+                }
+                cin.ignore(1000, '\n');
 
-    do
-    {
-        printNavigationMenu();
-
-        cin >> navChoice;
-        cin.ignore();
-
-        switch(navChoice)
-        {
-            case 1:
-                navigationManager.recordMove("Forward");
-                break;
-
-            case 2:
-                navigationManager.recordMove("Left");
-                break;
-
-            case 3:
-                navigationManager.recordMove("Right");
-                break;
-
-            case 4:
-                navigationManager.displayNavigationLog();
-                break;
-
-            case 5:
-                navigationManager.returnToStart();
-                break;
-
-            case 6:
-                navigationManager.obstacleDetected();
-                break;
-
-            case 0:
-                cout << "Returning...\n";
-                break;
+                string moveDirection;
+                switch (navChoice) {
+                case 1:
+                    cout << "  Enter direction coordinate string (e.g., Forward, Left, Bay-3): ";
+                    getline(cin, moveDirection);
+                    navigationManager.recordMove(moveDirection); // Pushes navigation move onto stack
+                    break;
+                case 2: {
+                    string removedMove = navigationManager.popMove(); // Pops move from stack
+                    if (!removedMove.empty()) {
+                        cout << "\n[SYSTEM] Successfully reverted movement step: " << removedMove << "\n";
+                    }
+                    else {
+                        cout << "\n[SYSTEM] Stack empty. Nothing to undo.\n";
+                    }
+                    break;
+                }
+                case 3:
+                    navigationManager.displayNavigationLog(); // Prints current path
+                    break;
+                case 4:
+                    navigationManager.obstacleDetected(); // Clears obstacle route alternative parameters
+                    break;
+                case 5:
+                    navigationManager.returnToStart(); // Pops steps until empty to trace back to source node
+                    break;
+                case 0:
+                    cout << "[SYSTEM] Returning to Main Menu...\n";
+                    break;
+                default:
+                    cout << "[ERROR] Invalid choice.\n";
+                    break;
+                }
+            } while (navChoice != 0);
+            break;
         }
-
-    } while(navChoice != 0);
-
-    break;
-}
 
         case 0:
             cout << "\n[SYSTEM SHUTDOWN] Terminating Warehouse Master Control...\n\n";

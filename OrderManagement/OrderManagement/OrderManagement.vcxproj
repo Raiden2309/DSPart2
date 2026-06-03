@@ -143,12 +143,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OrderManager.cpp" />
     <ClCompile Include="RobotAssignment.cpp" />
+    <ClCompile Include="RobotNavigation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BST.h" />
     <ClInclude Include="ItemNode.h" />
     <ClInclude Include="OrderManager.hpp" />
     <ClInclude Include="RobotAssignment.hpp" />
+    <ClInclude Include="RobotNavigation.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\Downloads\orders.csv" />
